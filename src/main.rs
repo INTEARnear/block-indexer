@@ -5,8 +5,8 @@ use inindexer::neardata_server::NeardataServerProvider;
 use inindexer::{
     run_indexer, AutoContinue, BlockIterator, IndexerOptions, PreprocessTransactionsSettings,
 };
-use tps_indexer::{redis_handler::PushToRedisStream, TpsIndexer};
 use redis::aio::ConnectionManager;
+use tps_indexer::{redis_handler::PushToRedisStream, TpsIndexer};
 
 #[tokio::main]
 async fn main() {
@@ -23,9 +23,7 @@ async fn main() {
     .unwrap();
     let connection = ConnectionManager::new(client).await.unwrap();
 
-    let mut indexer = TpsIndexer(
-        PushToRedisStream::new(connection, 1_000_000, true).await,
-    );
+    let mut indexer = TpsIndexer(PushToRedisStream::new(connection, 1_000_000, true).await);
 
     run_indexer(
         &mut indexer,

@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use inevents_redis::RedisEventStream;
-use intear_events::events::tps::{block_info::{BlockInfoEvent, BlockInfoEventData}, moretps_claims::{MoreTpsClaimEvent, MoreTpsClaimEventData}};
+use intear_events::events::tps::{
+    block_info::{BlockInfoEvent, BlockInfoEventData},
+    moretps_claims::{MoreTpsClaimEvent, MoreTpsClaimEventData},
+};
 use redis::aio::ConnectionManager;
 
 use crate::TpsEventHandler;
