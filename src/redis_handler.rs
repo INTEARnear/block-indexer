@@ -1,16 +1,13 @@
 use async_trait::async_trait;
 use inevents_redis::RedisEventStream;
-use intear_events::events::tps::{
-    block_info::{BlockInfoEvent, BlockInfoEventData},
-    moretps_claims::{MoreTpsClaimEvent, MoreTpsClaimEventData},
-};
+use inindexer::near_indexer_primitives::types::BlockHeight;
+use intear_events::events::block::info::BlockInfoEvent;
 use redis::aio::ConnectionManager;
 
 use crate::TpsEventHandler;
 
 pub struct PushToRedisStream {
-    block_info_stream: RedisEventStream<BlockInfoEventData>,
-    moretps_claim_stream: RedisEventStream<MoreTpsClaimEventData>,
+    block_info_stream: RedisEventStream<BlockInfoEvent>,
     max_stream_size: usize,
 }
 
@@ -25,14 +22,6 @@ impl PushToRedisStream {
                     BlockInfoEvent::ID.to_string()
                 },
             ),
-            moretps_claim_stream: RedisEventStream::new(
-                connection.clone(),
-                if testnet {
-                    format!("{}_testnet", MoreTpsClaimEvent::ID)
-                } else {
-                    MoreTpsClaimEvent::ID.to_string()
-                },
-            ),
             max_stream_size,
         }
     }
@@ -40,17 +29,21 @@ impl PushToRedisStream {
 
 #[async_trait]
 impl TpsEventHandler for PushToRedisStream {
-    async fn handle_block_info(&mut self, event: BlockInfoEventData) {
-        self.block_info_stream
-            .emit_event(event.block_height, event, self.max_stream_size)
-            .await
-            .expect("Failed to emit block info event");
+    async fn handle_block_info(&mut self, event: BlockInfoEvent) {
+        self.block_info_stream.add_event(BlockInfoEvent {
+            block_height: event.block_height,
+            block_hash: event.block_hash,
+            block_timestamp_nanosec: event.block_timestamp_nanosec,
+            transaction_count: event.transaction_count,
+            receipt_count: event.receipt_count,
+            block_producer: event.block_producer,
+        });
     }
 
-    async fn handle_moretps_claim(&mut self, event: MoreTpsClaimEventData) {
-        self.moretps_claim_stream
-            .emit_event(event.block_height, event, self.max_stream_size)
+    async fn flush_events(&mut self, block_height: BlockHeight) {
+        self.block_info_stream
+            .flush_events(block_height, self.max_stream_size)
             .await
-            .expect("Failed to emit moretps claim event");
+            .expect("Failed to flush block info stream");
     }
 }
