@@ -4,7 +4,7 @@ use inindexer::near_indexer_primitives::types::BlockHeight;
 use intear_events::events::block::info::BlockInfoEvent;
 use redis::aio::ConnectionManager;
 
-use crate::TpsEventHandler;
+use crate::BlockEventHandler;
 
 pub struct PushToRedisStream {
     block_info_stream: RedisEventStream<BlockInfoEvent>,
@@ -12,15 +12,11 @@ pub struct PushToRedisStream {
 }
 
 impl PushToRedisStream {
-    pub async fn new(connection: ConnectionManager, max_stream_size: usize, testnet: bool) -> Self {
+    pub async fn new(connection: ConnectionManager, max_stream_size: usize) -> Self {
         Self {
             block_info_stream: RedisEventStream::new(
                 connection.clone(),
-                if testnet {
-                    format!("{}_testnet", BlockInfoEvent::ID)
-                } else {
-                    BlockInfoEvent::ID.to_string()
-                },
+                BlockInfoEvent::ID,
             ),
             max_stream_size,
         }
@@ -28,7 +24,7 @@ impl PushToRedisStream {
 }
 
 #[async_trait]
-impl TpsEventHandler for PushToRedisStream {
+impl BlockEventHandler for PushToRedisStream {
     async fn handle_block_info(&mut self, event: BlockInfoEvent) {
         self.block_info_stream.add_event(BlockInfoEvent {
             block_height: event.block_height,

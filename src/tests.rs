@@ -6,7 +6,7 @@ use inindexer::{
     BlockIterator, IndexerOptions, PreprocessTransactionsSettings,
 };
 use intear_events::events::block::info::BlockInfoEvent;
-use tps_indexer::{TpsEventHandler, TpsIndexer};
+use block_indexer::{BlockEventHandler, BlockIndexer};
 
 #[derive(Default)]
 struct TestIndexer {
@@ -14,7 +14,7 @@ struct TestIndexer {
 }
 
 #[async_trait]
-impl TpsEventHandler for TestIndexer {
+impl BlockEventHandler for TestIndexer {
     async fn handle_block_info(&mut self, event: BlockInfoEvent) {
         self.block_info
             .entry(event.block_height)
@@ -29,7 +29,7 @@ impl TpsEventHandler for TestIndexer {
 
 #[tokio::test]
 async fn handles_block_info() {
-    let mut indexer = TpsIndexer(TestIndexer::default());
+    let mut indexer = BlockIndexer(TestIndexer::default());
 
     run_indexer(
         &mut indexer,

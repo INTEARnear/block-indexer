@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests;
 
+use block_indexer::{redis_handler::PushToRedisStream, BlockIndexer};
 use inindexer::neardata::NeardataProvider;
 use inindexer::{
     run_indexer, AutoContinue, BlockIterator, IndexerOptions, PreprocessTransactionsSettings,
 };
 use redis::aio::ConnectionManager;
-use tps_indexer::{redis_handler::PushToRedisStream, TpsIndexer};
 
 #[tokio::main]
 async fn main() {
@@ -23,7 +23,7 @@ async fn main() {
     .unwrap();
     let connection = ConnectionManager::new(client).await.unwrap();
 
-    let mut indexer = TpsIndexer(PushToRedisStream::new(connection, 1_000_000, true).await);
+    let mut indexer = BlockIndexer(PushToRedisStream::new(connection, 1_000_000).await);
 
     run_indexer(
         &mut indexer,
@@ -31,7 +31,7 @@ async fn main() {
         IndexerOptions {
             range: if std::env::args().len() > 1 {
                 // For debugging
-                let msg = "Usage: `tps-indexer` or `tps-indexer [start-block] [end-block]`";
+                let msg = "Usage: `block-indexer` or `block-indexer [start-block] [end-block]`";
                 BlockIterator::iterator(
                     std::env::args()
                         .nth(1)

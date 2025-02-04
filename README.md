@@ -1,4 +1,4 @@
-# TPS Indexer
+# Block Indexer
 
 This indexer streams all blocks from the blockchain and pushes them to a Redis stream.
 
