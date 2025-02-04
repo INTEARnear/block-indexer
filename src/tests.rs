@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
+use block_indexer::{BlockEventHandler, BlockIndexer};
 use inindexer::{
     near_indexer_primitives::types::BlockHeight, neardata::NeardataProvider, run_indexer,
     BlockIterator, IndexerOptions, PreprocessTransactionsSettings,
 };
 use intear_events::events::block::info::BlockInfoEvent;
-use block_indexer::{BlockEventHandler, BlockIndexer};
 
 #[derive(Default)]
 struct TestIndexer {

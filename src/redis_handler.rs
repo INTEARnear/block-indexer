@@ -14,10 +14,7 @@ pub struct PushToRedisStream {
 impl PushToRedisStream {
     pub async fn new(connection: ConnectionManager, max_stream_size: usize) -> Self {
         Self {
-            block_info_stream: RedisEventStream::new(
-                connection.clone(),
-                BlockInfoEvent::ID,
-            ),
+            block_info_stream: RedisEventStream::new(connection.clone(), BlockInfoEvent::ID),
             max_stream_size,
         }
     }
