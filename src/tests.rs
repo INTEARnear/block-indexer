@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use block_indexer::{BlockEventHandler, BlockIndexer};
 use inindexer::{
     near_indexer_primitives::types::BlockHeight, neardata::NeardataProvider, run_indexer,
-    BlockIterator, IndexerOptions, PreprocessTransactionsSettings,
+    BlockRange, IndexerOptions, PreprocessTransactionsSettings,
 };
 use intear_events::events::block::info::BlockInfoEvent;
 
@@ -35,12 +35,14 @@ async fn handles_block_info() {
         &mut indexer,
         NeardataProvider::mainnet(),
         IndexerOptions {
-            range: BlockIterator::iterator(124099140..=124099140),
             preprocess_transactions: Some(PreprocessTransactionsSettings {
                 prefetch_blocks: 0,
                 postfetch_blocks: 0,
             }),
-            ..Default::default()
+            ..IndexerOptions::default_with_range(BlockRange::Range {
+                start_inclusive: 124099140,
+                end_exclusive: Some(124099140),
+            })
         },
     )
     .await
